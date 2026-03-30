@@ -1,0 +1,12 @@
+{
+    "messages": [
+        {
+            "id": 1,
+            "texte": "Bonjour le monde depuis le back-end !"
+        },
+        {
+            "id": 2,
+            "texte": "J'apprends React et c'est super."
+        }
+    ]
+}
