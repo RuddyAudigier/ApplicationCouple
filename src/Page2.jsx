@@ -20,6 +20,7 @@ export default function Page2() {
   const [editValue, setEditValue] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
 
   if (!supabaseConfigured) {
     return (
@@ -39,6 +40,32 @@ export default function Page2() {
     );
   }
 
+  const fetchItems = async ({ showLoading = false } = {}) => {
+    if (!supabase) return;
+    if (showLoading) setLoading(true);
+    setErrorMsg("");
+
+    try {
+      const { data, error } = await supabase.from('courses').select('*');
+
+      if (error) throw error;
+
+      const nextItems = (data || []).slice();
+      nextItems.sort((a, b) => {
+        if (a?.created_at && b?.created_at) return (b.created_at || '').localeCompare(a.created_at || '');
+        if (typeof a?.id === 'number' && typeof b?.id === 'number') return (b.id ?? 0) - (a.id ?? 0);
+        return 0;
+      });
+
+      setItems(nextItems);
+    } catch (error) {
+      console.error("Erreur de chargement:", error);
+      setErrorMsg(error?.message || "Erreur inconnue");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Charger les données de Supabase au montage
   useEffect(() => {
     if (!supabase) {
@@ -46,7 +73,7 @@ export default function Page2() {
       return;
     }
 
-    fetchItems();
+    fetchItems({ showLoading: true });
 
     // Optionnel: Real-time subscription
     const subscription = supabase
@@ -60,22 +87,6 @@ export default function Page2() {
       supabase.removeChannel(subscription);
     };
   }, []);
-
-  const fetchItems = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('courses')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setItems(data || []);
-    } catch (error) {
-      console.error("Erreur de chargement:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddItem = async (e) => {
     e.preventDefault();
@@ -93,6 +104,7 @@ export default function Page2() {
 
       if (error) throw error;
       setInputValue("");
+      await fetchItems();
     } catch (error) {
       alert("Erreur lors de l'ajout: " + error.message);
     }
@@ -106,6 +118,7 @@ export default function Page2() {
         .eq('id', id);
 
       if (error) throw error;
+      await fetchItems();
     } catch (error) {
       alert("Erreur lors du changement de statut: " + error.message);
     }
@@ -119,6 +132,7 @@ export default function Page2() {
         .eq('id', id);
 
       if (error) throw error;
+      await fetchItems();
     } catch (error) {
       alert("Erreur lors de la suppression: " + error.message);
     }
@@ -140,6 +154,7 @@ export default function Page2() {
 
       if (error) throw error;
       setEditingId(null);
+      await fetchItems();
     } catch (error) {
       alert("Erreur lors de la modification: " + error.message);
     }
@@ -153,6 +168,7 @@ export default function Page2() {
         .eq('completed', true);
 
       if (error) throw error;
+      await fetchItems();
     } catch (error) {
       alert("Erreur lors du nettoyage: " + error.message);
     }
@@ -203,6 +219,12 @@ export default function Page2() {
       <div className="list-section-title">
         <span>À acheter ({activeItems.length})</span>
       </div>
+
+      {errorMsg && (
+        <div className="empty-state" style={{ marginTop: 12 }}>
+          <div style={{ maxWidth: 520, textAlign: "center" }}>Erreur Supabase : {errorMsg}</div>
+        </div>
+      )}
 
       {loading ? (
         <div className="empty-state">Chargement...</div>

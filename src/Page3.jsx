@@ -27,6 +27,7 @@ export default function Page3() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [newEventTitle, setNewEventTitle] = useState("");
   const [newEventType, setNewEventType] = useState("date");
@@ -81,6 +82,8 @@ export default function Page3() {
   }, []);
 
   const fetchEvents = async () => {
+    if (!supabase) return;
+    setErrorMsg("");
     try {
       const { data, error } = await supabase
         .from('calendrier_evenements')
@@ -89,7 +92,8 @@ export default function Page3() {
       if (error) throw error;
       setEvents(data || []);
     } catch (error) {
-      console.error("Erreur de chargement des événements:", error.message);
+      console.error("Erreur de chargement des événements:", error);
+      setErrorMsg(error?.message || "Erreur inconnue");
     } finally {
       setLoading(false);
     }
@@ -193,6 +197,7 @@ export default function Page3() {
       
       setShowModal(false);
       setNewEventTitle(""); setNewEventTime(""); setNewEventDuration("1"); setNewEventRecurrence("none");
+      await fetchEvents();
     } catch (error) {
       alert("Erreur lors de l'ajout de l'événement: " + error.message);
     }
@@ -483,6 +488,11 @@ export default function Page3() {
       </header>
 
       <div className="agenda-workspace">
+        {errorMsg && (
+          <div className="empty-state" style={{ margin: "12px 0" }}>
+            <div style={{ maxWidth: 520, textAlign: "center" }}>Erreur Supabase : {errorMsg}</div>
+          </div>
+        )}
         <div className="agenda-toolbar-premium">
           <div className="at-left">
             <button className="at-btn-today" onClick={navigateToday}>Aujourd'hui</button>
