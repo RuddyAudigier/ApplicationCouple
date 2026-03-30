@@ -104,7 +104,9 @@ export default function Page2() {
 
       if (error) throw error;
       setInputValue("");
-      await fetchItems();
+      const inserted = Array.isArray(data) ? data[0] : null;
+      if (inserted) setItems((prev) => [inserted, ...prev]);
+      else await fetchItems();
     } catch (error) {
       alert("Erreur lors de l'ajout: " + error.message);
     }
@@ -118,7 +120,7 @@ export default function Page2() {
         .eq('id', id);
 
       if (error) throw error;
-      await fetchItems();
+      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, completed: !currentStatus } : it)));
     } catch (error) {
       alert("Erreur lors du changement de statut: " + error.message);
     }
@@ -132,7 +134,7 @@ export default function Page2() {
         .eq('id', id);
 
       if (error) throw error;
-      await fetchItems();
+      setItems((prev) => prev.filter((it) => it.id !== id));
     } catch (error) {
       alert("Erreur lors de la suppression: " + error.message);
     }
@@ -154,7 +156,9 @@ export default function Page2() {
 
       if (error) throw error;
       setEditingId(null);
-      await fetchItems();
+      setItems((prev) =>
+        prev.map((it) => (it.id === id ? { ...it, text: editValue.trim(), category: editCategory } : it)),
+      );
     } catch (error) {
       alert("Erreur lors de la modification: " + error.message);
     }
@@ -168,7 +172,7 @@ export default function Page2() {
         .eq('completed', true);
 
       if (error) throw error;
-      await fetchItems();
+      setItems((prev) => prev.filter((it) => !it.completed));
     } catch (error) {
       alert("Erreur lors du nettoyage: " + error.message);
     }

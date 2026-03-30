@@ -182,7 +182,7 @@ export default function Page3() {
     if (!newEventTitle || !selectedDate) return;
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('calendrier_evenements')
         .insert([{
           date: selectedDate,
@@ -191,13 +191,16 @@ export default function Page3() {
           time: newEventTime || null,
           duration: parseFloat(newEventDuration) || 1,
           recurrence: newEventRecurrence
-        }]);
+        }])
+        .select();
 
       if (error) throw error;
       
       setShowModal(false);
       setNewEventTitle(""); setNewEventTime(""); setNewEventDuration("1"); setNewEventRecurrence("none");
-      await fetchEvents();
+      const inserted = Array.isArray(data) ? data[0] : null;
+      if (inserted) setEvents((prev) => [...prev, inserted]);
+      else await fetchEvents();
     } catch (error) {
       alert("Erreur lors de l'ajout de l'événement: " + error.message);
     }
