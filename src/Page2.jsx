@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Check, Trash2, Pencil } from "lucide-react";
-import { supabase } from "./supabaseClient";
+import { supabase, supabaseConfigured, supabaseConfigError } from "./supabaseClient";
 import "./Page2.css";
 
 const CATEGORIES = [
@@ -21,8 +21,31 @@ export default function Page2() {
   const [editCategory, setEditCategory] = useState("");
   const [loading, setLoading] = useState(true);
 
+  if (!supabaseConfigured) {
+    return (
+      <div className="page2-container">
+        <header className="page-header">
+          <Link to="/" className="back-button">
+            <ArrowLeft size={24} />
+          </Link>
+          <h1 className="page-title">Nos Courses 🛒</h1>
+        </header>
+
+        <div className="empty-state" style={{ marginTop: 24 }}>
+          <div className="empty-state-icon">⚠️</div>
+          <div style={{ maxWidth: 520, textAlign: "center" }}>{supabaseConfigError}</div>
+        </div>
+      </div>
+    );
+  }
+
   // Charger les données de Supabase au montage
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     fetchItems();
 
     // Optionnel: Real-time subscription

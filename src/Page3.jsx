@@ -4,7 +4,7 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, 
   MapPin, Clock, LayoutGrid, CheckCircle2, X
 } from 'lucide-react';
-import { supabase } from './supabaseClient';
+import { supabase, supabaseConfigured, supabaseConfigError } from './supabaseClient';
 import './Page3.css';
 
 const EVENT_TYPES = [
@@ -34,6 +34,25 @@ export default function Page3() {
   const [newEventDuration, setNewEventDuration] = useState("1");
   const [newEventRecurrence, setNewEventRecurrence] = useState("none");
 
+  if (!supabaseConfigured) {
+    return (
+      <div className="page3-layout">
+        <header className="app-header">
+          <Link to="/" className="app-back-btn"><ArrowLeft size={24} /></Link>
+          <h1 className="app-title">Agenda</h1>
+          <div className="app-header-actions" />
+        </header>
+
+        <div className="agenda-workspace" style={{ padding: 24 }}>
+          <div className="empty-state">
+            <div className="empty-state-icon">⚠️</div>
+            <div style={{ maxWidth: 520, textAlign: "center" }}>{supabaseConfigError}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
@@ -42,6 +61,11 @@ export default function Page3() {
 
   // Supabase Fetch & Real-time
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     fetchEvents();
 
     const subscription = supabase
@@ -669,4 +693,3 @@ export default function Page3() {
     </div>
   );
 }
-
