@@ -35,6 +35,8 @@ export default function Page3() {
   const [newEventDuration, setNewEventDuration] = useState("1");
   const [newEventRecurrence, setNewEventRecurrence] = useState("none");
 
+  const calendarFeedUrl = `${window.location.origin}/api/calendar.ics`;
+
   if (!supabaseConfigured) {
     return (
       <div className="page3-layout">
@@ -665,22 +667,22 @@ export default function Page3() {
               <div className="pf-section" style={{ backgroundColor: 'rgba(255, 181, 167, 0.1)', border: '1px solid var(--color-primary)' }}>
                 <h4 style={{ margin: '0 0 8px 0', color: 'var(--agenda-text-dark)' }}>1. Lien en direct (Auto-sync)</h4>
                 <p style={{ fontSize: '13px', color: 'var(--agenda-text-muted)', margin: '0 0 12px 0' }}>
-                  Abonnez-vous à ce lien dans Proton ou Microsoft. Le calendrier se mettra à jour tout seul.
-                  <br/><i style={{ fontSize: '11px' }}>Note : Ceci nécessitera que l'app soit en ligne sur internet pour fonctionner en vrai.</i>
+                  Abonnez-vous à ce lien dans Proton Calendar / Outlook. Le calendrier se mettra à jour tout seul.
+                  <br/><i style={{ fontSize: '11px' }}>Note : si tu as configuré `CALENDAR_FEED_TOKEN` sur Vercel, ajoute `?token=...` à la fin de l’URL.</i>
                 </p>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input 
                     type="text" 
                     readOnly 
                     className="pf-date" 
-                    value="https://nanamoureux.app/api/calendar/ruddy.ics" 
+                    value={calendarFeedUrl}
                     style={{ flex: 1, backgroundColor: 'var(--bg-card)' }}
                   />
                   <button 
                     className="at-btn-today" 
                     onClick={() => {
-                      navigator.clipboard.writeText("https://nanamoureux.app/api/calendar/ruddy.ics");
-                      alert("Lien copié ! Vous pouvez le coller dans Proton Calendar -> Ajouter par URL.");
+                      navigator.clipboard.writeText(calendarFeedUrl);
+                      alert("Lien copié ! Vous pouvez le coller dans Proton Calendar / Outlook → Ajouter par URL.");
                     }}
                   >
                     Copier
