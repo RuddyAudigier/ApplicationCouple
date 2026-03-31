@@ -456,6 +456,31 @@ body {
   gap: 4px;
 }
 
+.ac-actions {
+  display: flex;
+  align-items: center;
+  padding: 12px 12px 12px 0;
+}
+
+.ac-action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--agenda-border);
+  background: transparent;
+  color: var(--agenda-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.ac-action-btn:hover {
+  background: var(--agenda-hover);
+  color: #ff5252;
+  border-color: rgba(255, 82, 82, 0.35);
+}
+
 
 /* --- Premium Time Grid (Week & Day views) --- */
 .day-view-layout {
@@ -487,6 +512,80 @@ body {
   border-bottom: 1px solid var(--agenda-border);
   background: var(--bg-primary);
   /* Scroll offset handle un peu tricky si bcp de jours */
+}
+
+.tg-all-day-row {
+  display: flex;
+  border-bottom: 1px solid var(--agenda-border);
+  background: var(--bg-primary);
+}
+
+.tg-all-day-cell {
+  flex: 1;
+  min-width: 60px;
+  border-right: 1px solid var(--agenda-border);
+  padding: 6px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.tg-all-day-cell.is-selected {
+  background: rgba(255, 181, 167, 0.06);
+}
+
+.tg-ad-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.tg-ad-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--agenda-text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.tg-ad-delete {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.75);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b00020;
+  flex: none;
+}
+
+.tg-ad-more {
+  font-size: 11px;
+  color: var(--agenda-text-muted);
+  padding-left: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tg-ad-chip {
+    background: rgba(26, 26, 36, 0.55);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  .tg-ad-delete {
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(26, 26, 36, 0.55);
+  }
 }
 
 .tg-time-axis-spacer {
@@ -587,6 +686,13 @@ body {
   background: rgba(255, 181, 167, 0.02);
 }
 
+.tg-click-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+}
+
 .tg-event-block {
   position: absolute;
   left: 2px; right: 6px;
@@ -614,6 +720,28 @@ body {
 .tg-ev-time {
   font-size: 11px;
   opacity: 0.8;
+}
+
+.tg-ev-delete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b00020;
+}
+@media (prefers-color-scheme: dark) {
+  .tg-ev-delete {
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(26, 26, 36, 0.55);
+  }
 }
 
 .tg-current-time {

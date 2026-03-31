@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './HomePage.css';
 import { Heart, ShoppingBag, Calendar, ImageIcon, Lightbulb, PieChart, Home, MessageCircle, Settings, Plus, ChevronRight } from 'lucide-react';
+import { supabase, supabaseConfigured } from './supabaseClient';
 
 export default function HomePage() {
   const [greeting, setGreeting] = useState("Bonjour les amoureux ☀️");
   const [budgetFill, setBudgetFill] = useState(0);
+  const [coursesCount, setCoursesCount] = useState(null);
+  const [coursesLoading, setCoursesLoading] = useState(false);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -17,7 +20,50 @@ export default function HomePage() {
     setTimeout(() => setBudgetFill(45), 300);
   }, []);
 
+  useEffect(() => {
+    if (!supabaseConfigured || !supabase) return;
+
+    let isMounted = true;
+
+    const fetchCoursesCount = async () => {
+      setCoursesLoading(true);
+      try {
+        const { count, error } = await supabase
+          .from('courses')
+          .select('*', { count: 'exact', head: true })
+          .eq('completed', false);
+        if (error) throw error;
+        if (isMounted) setCoursesCount(typeof count === 'number' ? count : 0);
+      } catch (e) {
+        console.error('Erreur de chargement du compteur courses:', e);
+        if (isMounted) setCoursesCount(0);
+      } finally {
+        if (isMounted) setCoursesLoading(false);
+      }
+    };
+
+    fetchCoursesCount();
+
+    const subscription = supabase
+      .channel('public:courses-home-counter')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, () => {
+        fetchCoursesCount();
+      })
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(subscription);
+    };
+  }, []);
+
   const budgetColorClass = budgetFill < 50 ? 'safe' : budgetFill < 80 ? 'warning' : 'danger';
+  const coursesSubtitle = (() => {
+    if (!supabaseConfigured) return '— articles';
+    if (coursesLoading) return '...';
+    const n = typeof coursesCount === 'number' ? coursesCount : 0;
+    return `${n} article${n === 1 ? '' : 's'}`;
+  })();
 
   return (
     <div className="app-container">
@@ -39,7 +85,7 @@ export default function HomePage() {
             <span>Défi du jour</span>
           </div>
           <div className="mot-content">
-            Préparer le thé de l'autre ce soir 🍵
+            Le bien, l'ennemi du mieux 🤔
           </div>
           <div className="fab-icon">
             <ChevronRight size={24} />
@@ -53,7 +99,7 @@ export default function HomePage() {
           </div>
           <div>
             <div className="widget-title">Courses</div>
-            <div className="widget-subtitle">3 articles</div>
+            <div className="widget-subtitle">{coursesSubtitle}</div>
           </div>
         </Link>
         

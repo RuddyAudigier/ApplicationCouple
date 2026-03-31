@@ -6,20 +6,77 @@ import Page3 from "./Page3";
 import Page4 from "./Page4";
 import Page5 from "./Page5";
 import Page6 from "./Page6";
+import { AuthProvider } from "./auth/AuthProvider";
+import RequireAuth from "./auth/RequireAuth";
+import LoginPage from "./auth/LoginPage";
+import AuthCallback from "./auth/AuthCallback";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/page1" element={<Page1 />} />
-        <Route path="/page2" element={<Page2 />} />
-        <Route path="/page3" element={<Page3 />} />
-        <Route path="/page4" element={<Page4 />} />
-        <Route path="/page5" element={<Page5 />} />
-        <Route path="/page6" element={<Page6 />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <HomePage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/page1"
+            element={
+              <RequireAuth>
+                <Page1 />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/page2"
+            element={
+              <RequireAuth>
+                <Page2 />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/page3"
+            element={
+              <RequireAuth>
+                <Page3 />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/page4"
+            element={
+              <RequireAuth>
+                <Page4 />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/page5"
+            element={
+              <RequireAuth>
+                <Page5 />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/page6"
+            element={
+              <RequireAuth>
+                <Page6 />
+              </RequireAuth>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

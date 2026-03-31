@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ArrowLeft, ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, 
-  MapPin, Clock, LayoutGrid, CheckCircle2, X
+  MapPin, Clock, LayoutGrid, CheckCircle2, Trash2, X
 } from 'lucide-react';
 import { supabase, supabaseConfigured, supabaseConfigError } from './supabaseClient';
 import './Page3.css';
@@ -20,7 +20,7 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 export default function Page3() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState('month'); // 'month', 'week', 'day'
+  const [view, setView] = useState('week'); // 'month', 'week', 'day'
   const [events, setEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getLocalDayStr());
   const [showModal, setShowModal] = useState(false);
@@ -34,8 +34,12 @@ export default function Page3() {
   const [newEventTime, setNewEventTime] = useState("");
   const [newEventDuration, setNewEventDuration] = useState("1");
   const [newEventRecurrence, setNewEventRecurrence] = useState("none");
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, event: null, dateStr: "" });
 
-  const calendarFeedUrl = `${window.location.origin}/api/calendar.ics`;
+  const timeGridScrollRef = useRef(null);
+
+  const publicBaseUrl = (import.meta.env.VITE_PUBLIC_BASE_URL || window.location.origin).replace(/\/$/, "");
+  const calendarFeedUrl = `${publicBaseUrl}/api/calendar.ics`;
 
   if (!supabaseConfigured) {
     return (
@@ -120,6 +124,7 @@ export default function Page3() {
   };
 
   const isEventOnDate = (event, checkDateStr) => {
+    if (Array.isArray(event?.exceptions) && event.exceptions.includes(checkDateStr)) return false;
     if (!event.recurrence || event.recurrence === "none") return event.date === checkDateStr;
     const evDate = new Date(event.date);
     const ckDate = new Date(checkDateStr);
@@ -140,6 +145,62 @@ export default function Page3() {
       return evDate.getDate() === ckDate.getDate() && evDate.getMonth() === ckDate.getMonth();
     }
     return event.date === checkDateStr;
+  };
+
+  const openCreateModalAt = ({ dateStr, minutesFromTop }) => {
+    const safeMinutes = Math.max(0, Math.min((24 * 60) - 1, minutesFromTop));
+    let hour = Math.floor(safeMinutes / 60);
+    const minute = safeMinutes % 60;
+    let roundedMinute = minute >= 30 ? 30 : 0;
+    if (hour === 24) hour = 23;
+    if (hour === 23 && roundedMinute === 30) roundedMinute = 30;
+
+    const timeStr = `${String(hour).padStart(2, "0")}:${roundedMinute === 0 ? "00" : "30"}`;
+
+    setSelectedDate(dateStr);
+    setNewEventTitle("");
+    setNewEventTime(timeStr);
+    setNewEventDuration("1");
+    setNewEventRecurrence("none");
+    setShowModal(true);
+  };
+
+  const requestDeleteEvent = (ev, occurrenceDateStr) => {
+    if (!ev) return;
+    const isRecurring = Boolean(ev.recurrence && ev.recurrence !== "none");
+    if (isRecurring) {
+      setDeleteDialog({ open: true, event: ev, dateStr: occurrenceDateStr });
+      return;
+    }
+
+    if (!confirm("Supprimer cet événement ?")) return;
+    deleteEventRow(ev.id);
+  };
+
+  const deleteEventRow = async (eventId) => {
+    try {
+      const { error } = await supabase.from("calendrier_evenements").delete().eq("id", eventId);
+      if (error) throw error;
+      setEvents((prev) => prev.filter((e) => e.id !== eventId));
+    } catch (e) {
+      alert("Erreur lors de la suppression: " + (e?.message || "Erreur inconnue"));
+    }
+  };
+
+  const deleteRecurringOccurrence = async (ev, dateStr) => {
+    const currentExceptions = Array.isArray(ev?.exceptions) ? ev.exceptions.slice() : [];
+    const nextExceptions = currentExceptions.includes(dateStr) ? currentExceptions : [...currentExceptions, dateStr];
+
+    try {
+      const { error } = await supabase
+        .from("calendrier_evenements")
+        .update({ exceptions: nextExceptions })
+        .eq("id", ev.id);
+      if (error) throw error;
+      setEvents((prev) => prev.map((e) => (e.id === ev.id ? { ...e, exceptions: nextExceptions } : e)));
+    } catch (e) {
+      alert("Erreur lors de la suppression de l'occurrence: " + (e?.message || "Erreur inconnue"));
+    }
   };
 
   // Nav
@@ -390,6 +451,16 @@ export default function Page3() {
                       <span className="ac-icon">{typeInfo?.icon}</span> {typeInfo?.label}
                     </div>
                   </div>
+                  <div className="ac-actions">
+                    <button
+                      className="ac-action-btn"
+                      onClick={() => requestDeleteEvent(ev, selectedDate)}
+                      title="Supprimer"
+                      aria-label="Supprimer"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -417,8 +488,55 @@ export default function Page3() {
             );
           })}
         </div>
+
+        <div className="tg-all-day-row">
+          <div className="tg-time-axis-spacer"></div>
+          {daysToRender.map((date, i) => {
+            const dateStr = getLocalDayStr(date);
+            const dayEvents = events.filter((e) => isEventOnDate(e, dateStr));
+            const allDay = dayEvents.filter((ev) => !ev.time);
+            const isSelected = dateStr === selectedDate;
+
+            return (
+              <div
+                key={`ad-${i}`}
+                className={`tg-all-day-cell ${isSelected ? "is-selected" : ""}`}
+                onClick={() => handleDayClick(dateStr)}
+              >
+                {allDay.slice(0, 2).map((ev) => {
+                  const typeInfo = EVENT_TYPES.find((t) => t.id === ev.type);
+                  return (
+                    <div
+                      key={`ad-chip-${ev.id}`}
+                      className="tg-ad-chip"
+                      style={{
+                        backgroundColor: typeInfo?.softColor,
+                        borderLeftColor: typeInfo?.color,
+                      }}
+                      title={ev.title}
+                    >
+                      <span className="tg-ad-title">{ev.title}</span>
+                      <button
+                        className="tg-ad-delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          requestDeleteEvent(ev, dateStr);
+                        }}
+                        title="Supprimer"
+                        aria-label="Supprimer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+                {allDay.length > 2 ? <div className="tg-ad-more">+{allDay.length - 2}</div> : null}
+              </div>
+            );
+          })}
+        </div>
         
-        <div className="tg-body">
+        <div className="tg-body" ref={timeGridScrollRef}>
           <div className="tg-time-axis">
             {HOURS.map(hour => (
               <div key={hour} className="tg-time-label">
@@ -443,7 +561,16 @@ export default function Page3() {
               const dayEvents = events.filter(e => isEventOnDate(e, dateStr));
               
               return (
-                <div key={i} className={`tg-day-column ${dateStr === getLocalDayStr() ? 'is-today-col' : ''}`} onClick={() => handleDayClick(dateStr)}>
+                <div key={i} className={`tg-day-column ${dateStr === getLocalDayStr() ? 'is-today-col' : ''}`}>
+                  <div
+                    className="tg-click-layer"
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const y = (e.clientY - rect.top) + (timeGridScrollRef.current?.scrollTop || 0);
+                      handleDayClick(dateStr);
+                      openCreateModalAt({ dateStr, minutesFromTop: y });
+                    }}
+                  />
                   {dayEvents.filter(ev => ev.time).map(ev => {
                     const [hours, minutes] = ev.time.split(':').map(Number);
                     const topPos = (hours * 60) + minutes;
@@ -454,6 +581,7 @@ export default function Page3() {
                       <div 
                         key={ev.id} 
                         className="tg-event-block"
+                        onClick={(e) => e.stopPropagation()}
                         style={{ 
                           top: `${topPos}px`, 
                           height: `${Math.max(30, height)}px`,
@@ -462,6 +590,17 @@ export default function Page3() {
                           color: '#2d3748'
                         }}
                       >
+                        <button
+                          className="tg-ev-delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            requestDeleteEvent(ev, dateStr);
+                          }}
+                          title="Supprimer"
+                          aria-label="Supprimer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                         <div className="tg-ev-title">{ev.title}</div>
                         <div className="tg-ev-time">{ev.time}</div>
                       </div>
@@ -700,6 +839,64 @@ export default function Page3() {
                 </button>
               </div>
 
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteDialog.open && (
+        <div
+          className="modal-overlay"
+          onClick={() => setDeleteDialog({ open: false, event: null, dateStr: "" })}
+        >
+          <div className="modal-content premium-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Supprimer l’événement</h3>
+              <button
+                className="modal-close-btn"
+                onClick={() => setDeleteDialog({ open: false, event: null, dateStr: "" })}
+                aria-label="Fermer"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="premium-form" style={{ paddingBottom: 28 }}>
+              <p style={{ color: "var(--agenda-text-muted)", lineHeight: 1.5, marginTop: 0 }}>
+                “{deleteDialog.event?.title}” est un événement récurrent. Que veux-tu supprimer ?
+              </p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
+                <button
+                  className="pf-btn-submit"
+                  onClick={async () => {
+                    const ev = deleteDialog.event;
+                    const dateStr = deleteDialog.dateStr;
+                    setDeleteDialog({ open: false, event: null, dateStr: "" });
+                    await deleteRecurringOccurrence(ev, dateStr);
+                  }}
+                >
+                  Supprimer uniquement ce jour
+                </button>
+                <button
+                  className="pf-btn-submit"
+                  style={{ background: "#ff5252", boxShadow: "0 8px 20px rgba(255, 82, 82, 0.25)" }}
+                  onClick={async () => {
+                    const ev = deleteDialog.event;
+                    setDeleteDialog({ open: false, event: null, dateStr: "" });
+                    await deleteEventRow(ev.id);
+                  }}
+                >
+                  Supprimer toutes les répétitions
+                </button>
+                <button
+                  className="at-btn-today"
+                  style={{ width: "100%", padding: 14, borderRadius: 16 }}
+                  onClick={() => setDeleteDialog({ open: false, event: null, dateStr: "" })}
+                >
+                  Annuler
+                </button>
+              </div>
             </div>
           </div>
         </div>
