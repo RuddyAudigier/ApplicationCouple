@@ -133,6 +133,38 @@ Champs utilisés:
 - Calcul local (sans BDD) pour répartir des dépenses selon les revenus.
 - Page: `src/Page6.jsx`
 
+## Schéma BDD (simplifié)
+
+```
+auth.users
+  └─ (utilisé par Supabase Auth)
+
+public.defis
+  - id, created_at
+  - title, note, category
+  - assigned_to, created_by
+  - scope (day|week)
+  - target_date, week_start
+  - completed
+
+public.courses
+  - id, created_at
+  - text, category
+  - completed
+
+public.calendrier_evenements
+  - id, created_at
+  - date, title, type
+  - time (nullable), duration (nullable)
+  - recurrence (none|daily|weekly|monthly|yearly)
+  - exceptions (text[]; occurrences masquées)
+
+public.idees_dates
+  - id, created_at
+  - title, mood
+  - place (nullable), notes (nullable)
+```
+
 ## Outils technologiques utilisés
 
 - Frontend: React + Vite
@@ -163,12 +195,3 @@ Variables côté serveur (pour `api/calendar.ics.js`) — à mettre sur Vercel/s
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY` (ne jamais exposer au navigateur)
 - `CALENDAR_FEED_TOKEN` (optionnel)
-
-## Autres choses utiles à ajouter ?
-
-Oui, si tu veux rendre le projet plus “pro”, je mettrais aussi:
-- Une section “Roadmap” (features futures: galerie, budget persistant, notifications…)
-- Une section “Sécurité / RLS” (policies par table, multi-utilisateurs, partage “couple”)
-- Une section “Sauvegarde / export” (export JSON/CSV, restauration)
-- Un petit schéma BDD (tables + colonnes) ou des scripts SQL de création pour **toutes** les tables
-
