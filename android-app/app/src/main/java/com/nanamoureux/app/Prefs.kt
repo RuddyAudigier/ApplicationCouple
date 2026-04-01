@@ -18,12 +18,19 @@ object Prefs {
 
   fun getToken(ctx: Context): String =
     ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE).getString(KEY_TOKEN, "")?.trim().orEmpty()
+      .ifBlank { BuildConfig.WIDGET_TOKEN.trim() }
 
   fun getRecipient(ctx: Context): String =
     ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE).getString(KEY_RECIPIENT, "")?.trim().orEmpty()
 
   fun getAppUrl(ctx: Context): String =
     ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE).getString(KEY_APP_URL, "")?.trim().orEmpty()
+
+  fun setRecipient(ctx: Context, recipient: String) {
+    ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE).edit()
+      .putString(KEY_RECIPIENT, recipient.trim().lowercase())
+      .apply()
+  }
 
   fun setAll(ctx: Context, apiUrl: String, token: String, recipient: String, appUrl: String) {
     ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE).edit()

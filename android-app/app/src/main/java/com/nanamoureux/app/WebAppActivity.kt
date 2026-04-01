@@ -27,6 +27,7 @@ class WebAppActivity : AppCompatActivity() {
     webView.settings.domStorageEnabled = true
     webView.settings.mediaPlaybackRequiresUserGesture = true
     webView.webChromeClient = WebChromeClient()
+    webView.addJavascriptInterface(NanamoureuxBridge(this), "NanamoureuxBridge")
 
     webView.webViewClient = object : WebViewClient() {
       override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {

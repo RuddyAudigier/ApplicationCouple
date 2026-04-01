@@ -17,6 +17,8 @@ android {
 
     // URL par défaut de l’app web (modifiable dans l’écran Réglages)
     buildConfigField("String", "DEFAULT_APP_URL", "\"https://application-couple.vercel.app\"")
+    // Optionnel: token widget embarqué (laisser vide si tu préfères le configurer dans l’app)
+    buildConfigField("String", "WIDGET_TOKEN", "\"\"")
   }
 
   buildTypes {

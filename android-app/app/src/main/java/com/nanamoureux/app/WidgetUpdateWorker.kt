@@ -10,6 +10,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -49,10 +50,10 @@ class WidgetUpdateWorker(
       for (id in appWidgetIds) {
         val views = RemoteViews(applicationContext.packageName, R.layout.widget_poetry)
         views.setTextViewText(R.id.widgetTitle, "Nanamoureux")
-      views.setTextViewText(R.id.widgetContent, "Ouvre l’app pour configurer le widget.")
-      views.setOnClickPendingIntent(R.id.widgetRoot, buildOpenAppIntent())
-      mgr.updateAppWidget(id, views)
-    }
+        views.setTextViewText(R.id.widgetContent, "Ouvre l’app pour configurer le widget.")
+        views.setOnClickPendingIntent(R.id.widgetRoot, buildOpenAppIntent())
+        mgr.updateAppWidget(id, views)
+      }
       return Result.success()
     }
 
@@ -141,6 +142,7 @@ class WidgetUpdateWorker(
   private fun scheduleNextLoop() {
     val data = Data.Builder()
       .putBoolean(KEY_LOOP, true)
+      .putBoolean(KEY_FORCE, false)
       .build()
 
     val req = OneTimeWorkRequestBuilder<WidgetUpdateWorker>()

@@ -39,10 +39,19 @@ export function AuthProvider({ children }) {
     return { loading, session, user };
   }, [loading, session]);
 
+  useEffect(() => {
+    const email = session?.user?.email;
+    if (!email) return;
+    try {
+      window.NanamoureuxBridge?.setUserEmail?.(email);
+    } catch {
+      // ignore
+    }
+  }, [session]);
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   return useContext(AuthContext);
 }
-

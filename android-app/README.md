@@ -32,3 +32,14 @@ Ce dossier contient une **seule app Android** qui inclut :
 3) Ajoute le widget:
    - appui long sur l’écran d’accueil → Widgets → Nanamoureux → déposer
 
+## Connexion (magic link) dans l’APK
+
+Le magic link doit ouvrir l’app Android (pas uniquement le site web).
+
+- L’APK déclare un deep link vers:
+  - `https://application-couple.vercel.app/auth/callback`
+- Dans Supabase → Authentication → URL Configuration:
+  - ajoute `https://application-couple.vercel.app/auth/callback` dans “Additional Redirect URLs”
+
+Astuce:
+- après le clic dans l’email, Android peut te proposer “Ouvrir avec Nanamoureux”. Choisis Nanamoureux.
