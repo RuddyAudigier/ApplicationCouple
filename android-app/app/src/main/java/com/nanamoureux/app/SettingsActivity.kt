@@ -1,4 +1,4 @@
-package com.nanamoureux.app
+package com.nanamoureux.widget
 
 import android.os.Bundle
 import android.widget.Button
@@ -36,4 +36,3 @@ class SettingsActivity : AppCompatActivity() {
     }
   }
 }
-

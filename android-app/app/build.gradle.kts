@@ -4,11 +4,12 @@ plugins {
 }
 
 android {
-  namespace = "com.nanamoureux.app"
+  namespace = "com.nanamoureux.widget"
   compileSdk = 35
 
   defaultConfig {
-    applicationId = "com.nanamoureux.app"
+    // Même applicationId que l'ancien prototype "widget" -> une seule app sur le téléphone (mise à jour au lieu d'installer une 2e).
+    applicationId = "com.nanamoureux.widget"
     minSdk = 26
     targetSdk = 35
     versionCode = 1
@@ -44,4 +45,3 @@ dependencies {
   implementation("com.google.android.material:material:1.12.0")
   implementation("androidx.work:work-runtime-ktx:2.9.1")
 }
-

@@ -1,4 +1,4 @@
-package com.nanamoureux.app
+package com.nanamoureux.widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -23,6 +23,7 @@ class WidgetUpdateWorker(
 
   override suspend fun doWork(): Result {
     val loop = inputData.getBoolean(KEY_LOOP, false)
+    val force = inputData.getBoolean(KEY_FORCE, false)
     val ids = inputData.getIntArray(KEY_WIDGET_IDS)
     val appWidgetIds = if (ids != null && ids.isNotEmpty()) ids else {
       val mgr = AppWidgetManager.getInstance(applicationContext)
@@ -36,16 +37,26 @@ class WidgetUpdateWorker(
     val token = Prefs.getToken(applicationContext)
     val recipient = Prefs.getRecipient(applicationContext)
 
+    val now = System.currentTimeMillis()
+    val lastFetch = Prefs.getLastWidgetFetchMs(applicationContext)
+    val minIntervalMs = 5L * 60L * 1000L
+    if (!force && lastFetch > 0 && (now - lastFetch) < minIntervalMs) {
+      if (loop) scheduleNextLoop()
+      return Result.success()
+    }
+
     if (token.isBlank() || recipient.isBlank()) {
-    for (id in appWidgetIds) {
-      val views = RemoteViews(applicationContext.packageName, R.layout.widget_poetry)
-      views.setTextViewText(R.id.widgetTitle, "Nanamoureux")
+      for (id in appWidgetIds) {
+        val views = RemoteViews(applicationContext.packageName, R.layout.widget_poetry)
+        views.setTextViewText(R.id.widgetTitle, "Nanamoureux")
       views.setTextViewText(R.id.widgetContent, "Ouvre l’app pour configurer le widget.")
       views.setOnClickPendingIntent(R.id.widgetRoot, buildOpenAppIntent())
       mgr.updateAppWidget(id, views)
     }
       return Result.success()
     }
+
+    Prefs.setLastWidgetFetchMs(applicationContext, now)
 
     val url = buildWidgetUrl(apiUrl, token, recipient)
     val (content, meta) = fetchLatest(url)
@@ -124,6 +135,7 @@ class WidgetUpdateWorker(
   companion object {
     const val KEY_WIDGET_IDS = "widget_ids"
     const val KEY_LOOP = "loop"
+    const val KEY_FORCE = "force"
   }
 
   private fun scheduleNextLoop() {

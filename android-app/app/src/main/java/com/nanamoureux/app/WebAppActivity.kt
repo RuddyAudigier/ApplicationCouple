@@ -1,4 +1,4 @@
-package com.nanamoureux.app
+package com.nanamoureux.widget
 
 import android.content.Intent
 import android.net.Uri

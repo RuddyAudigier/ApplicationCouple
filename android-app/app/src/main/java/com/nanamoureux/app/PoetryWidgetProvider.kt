@@ -1,4 +1,4 @@
-package com.nanamoureux.app
+package com.nanamoureux.widget
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -32,6 +32,7 @@ class PoetryWidgetProvider : AppWidgetProvider() {
   private fun enqueueUpdate(context: Context, appWidgetIds: IntArray) {
     val data = Data.Builder()
       .putIntArray(WidgetUpdateWorker.KEY_WIDGET_IDS, appWidgetIds)
+      .putBoolean(WidgetUpdateWorker.KEY_FORCE, false)
       .build()
 
     val req = OneTimeWorkRequestBuilder<WidgetUpdateWorker>()
@@ -44,6 +45,7 @@ class PoetryWidgetProvider : AppWidgetProvider() {
   private fun ensureLoopScheduled(context: Context) {
     val data = Data.Builder()
       .putBoolean(WidgetUpdateWorker.KEY_LOOP, true)
+      .putBoolean(WidgetUpdateWorker.KEY_FORCE, false)
       .build()
 
     // Best-effort: toutes les 5 minutes. Android peut retarder en arrière-plan.
@@ -64,11 +66,16 @@ class PoetryWidgetProvider : AppWidgetProvider() {
       val component = ComponentName(context, PoetryWidgetProvider::class.java)
       val ids = mgr.getAppWidgetIds(component)
       if (ids.isEmpty()) return
-      val intent = Intent(context, PoetryWidgetProvider::class.java).apply {
-        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-      }
-      context.sendBroadcast(intent)
+      val data = Data.Builder()
+        .putIntArray(WidgetUpdateWorker.KEY_WIDGET_IDS, ids)
+        .putBoolean(WidgetUpdateWorker.KEY_FORCE, true)
+        .build()
+
+      val req = OneTimeWorkRequestBuilder<WidgetUpdateWorker>()
+        .setInputData(data)
+        .build()
+
+      WorkManager.getInstance(context).enqueueUniqueWork(WORK_NOW, ExistingWorkPolicy.REPLACE, req)
     }
   }
 }

@@ -1,4 +1,4 @@
-package com.nanamoureux.app
+package com.nanamoureux.widget
 
 import android.content.Context
 
@@ -11,6 +11,7 @@ object Prefs {
   private const val KEY_APP_URL = "app_url"
   private const val KEY_LAST_WIDGET_CONTENT = "last_widget_content"
   private const val KEY_LAST_WIDGET_META = "last_widget_meta"
+  private const val KEY_LAST_WIDGET_FETCH_MS = "last_widget_fetch_ms"
 
   fun getApiUrl(ctx: Context): String =
     ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE).getString(KEY_API_URL, "")?.trim().orEmpty()
@@ -43,6 +44,15 @@ object Prefs {
     ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE).edit()
       .putString(KEY_LAST_WIDGET_CONTENT, content)
       .putString(KEY_LAST_WIDGET_META, meta)
+      .apply()
+  }
+
+  fun getLastWidgetFetchMs(ctx: Context): Long =
+    ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE).getLong(KEY_LAST_WIDGET_FETCH_MS, 0L)
+
+  fun setLastWidgetFetchMs(ctx: Context, value: Long) {
+    ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE).edit()
+      .putLong(KEY_LAST_WIDGET_FETCH_MS, value)
       .apply()
   }
 }
