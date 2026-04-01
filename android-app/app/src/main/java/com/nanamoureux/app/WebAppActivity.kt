@@ -60,10 +60,11 @@ class WebAppActivity : AppCompatActivity() {
       val dataStr = data.toString().trim()
       if (data.scheme == "nanamoureux") {
         val query = data.encodedQuery?.let { if (it.isNotBlank()) "?$it" else "" } ?: ""
+        val fragment = data.encodedFragment?.let { if (it.isNotBlank()) "#$it" else "" } ?: ""
         val path = data.path?.trim().orEmpty()
         // On convertit le deep link custom scheme vers l’URL web /auth/callback
-        if (path.endsWith("/callback") || path == "/callback") return "$base/auth/callback$query"
-        return "$base/auth/callback$query"
+        if (path.endsWith("/callback") || path == "/callback") return "$base/auth/callback$query$fragment"
+        return "$base/auth/callback$query$fragment"
       }
       if (dataStr.isNotBlank()) return dataStr
     }

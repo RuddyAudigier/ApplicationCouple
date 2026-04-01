@@ -54,7 +54,8 @@ class PoetryWidgetProvider : AppWidgetProvider() {
       .setInitialDelay(5, TimeUnit.MINUTES)
       .build()
 
-    WorkManager.getInstance(context).enqueueUniqueWork(WORK_LOOP, ExistingWorkPolicy.REPLACE, req)
+    // KEEP: évite de recréer le job en boucle si le système déclenche onUpdate plusieurs fois.
+    WorkManager.getInstance(context).enqueueUniqueWork(WORK_LOOP, ExistingWorkPolicy.KEEP, req)
   }
 
   companion object {

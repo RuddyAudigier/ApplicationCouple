@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase, supabaseConfigured, supabaseConfigError } from "../supabaseClient";
 
+const NEXT_STORAGE_KEY = "nanamoureux_auth_next";
+
 export default function AuthCallback() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("Connexion en cours…");
@@ -17,7 +19,16 @@ export default function AuthCallback() {
       try {
         // Magic link uses ?code=... (PKCE). Exchange it for a session.
         const url = new URL(window.location.href);
-        const next = url.searchParams.get("next") || "/";
+        const nextFromQuery = url.searchParams.get("next");
+        let next = nextFromQuery || "/";
+        if (!nextFromQuery) {
+          try {
+            const stored = localStorage.getItem(NEXT_STORAGE_KEY);
+            if (stored) next = stored;
+          } catch {
+            // ignore
+          }
+        }
 
         // Android handoff: si le callback s'ouvre dans Chrome (ou WebAPK/PWA),
         // on tente d'ouvrir l'APK via le custom scheme pour finaliser la session dans la WebView.
@@ -47,6 +58,12 @@ export default function AuthCallback() {
           }
           const { error } = await supabase.auth.setSession({ access_token, refresh_token });
           if (error) throw error;
+        }
+
+        try {
+          localStorage.removeItem(NEXT_STORAGE_KEY);
+        } catch {
+          // ignore
         }
 
         navigate(next, { replace: true });

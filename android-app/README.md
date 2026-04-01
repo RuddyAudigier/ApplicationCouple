@@ -45,3 +45,12 @@ Le magic link doit ouvrir l’app Android (pas uniquement le site web).
 
 Astuce:
 - après le clic dans l’email, Android peut te proposer “Ouvrir avec Nanamoureux”. Choisis Nanamoureux.
+
+### (Optionnel) App Links (ouvrir automatiquement l’APK depuis un lien https)
+
+Pour que `https://application-couple.vercel.app/auth/callback` ouvre **directement** l’APK (sans demander), il faut activer les App Links:
+
+1) Déployer `public/.well-known/assetlinks.json` sur ton domaine (déjà ajouté dans le repo).
+2) Remplacer `REPLACE_WITH_YOUR_SHA256_FINGERPRINT` par l’empreinte SHA-256 du certificat qui signe ton APK.
+   - debug keystore (Android Studio) ou keystore release (si tu signes en release)
+3) Réinstaller l’APK puis, sur le téléphone: Paramètres → Apps → Nanamoureux → “Ouvrir par défaut” → activer “Ouvrir les liens pris en charge”.

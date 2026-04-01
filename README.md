@@ -226,21 +226,20 @@ Je suis en couple et je voulais une app simple (et jolie) pour faciliter ma vie 
 4) Lancer en dev:
    - `npm run dev`
 
-### Installation sur téléphone (PWA)
+### Installation sur téléphone (Android)
 
-L’app est installable comme une PWA:
-- iPhone (Safari): Partager → “Sur l’écran d’accueil”
-- Android (Chrome): menu → “Installer l’application”
+Pour éviter la confusion “2 applis” sur Android (WebAPK/PWA + APK) et les soucis de cache, la version web **n’est pas destinée à être installée** depuis Chrome.
 
-Astuce “widget” (sans app native):
-- ouvre ` /poesie-widget ` puis “Ajouter à l’écran d’accueil” pour avoir un raccourci plein écran qui affiche le dernier petit mot.
+- Recommandé: générer et installer l’APK unique depuis `android-app/`.
+- Si tu vois déjà 2 “Nanamoureux” dans les applis Android:
+  - désinstalle la version “installée via Chrome” (WebAPK/PWA)
+  - puis garde uniquement l’APK `android-app/`.
 
 ### Widget Android (natif)
 
 Un vrai widget Android nécessite une app Android.
 
 - APK unique (recommandé): `android-app/` (WebView + widget dans une seule app)
-- Ancien prototype widget-only: `android-widget/` (à éviter si tu veux “une seule app”)
 
 1) Déployer l’app (ex: Vercel) et configurer les variables serveur:
    - `SUPABASE_URL`
@@ -248,11 +247,10 @@ Un vrai widget Android nécessite une app Android.
    - `POESIE_WIDGET_TOKEN` (secret de ton choix)
 2) Le widget lit l’API:
    - `GET /api/poesie-widget?token=...&recipient=...`
-3) Ouvrir `android-widget/` dans Android Studio, lancer l’app, puis renseigner:
+3) Ouvrir `android-app/` dans Android Studio, lancer l’app, puis renseigner (⚙️ dans l’app):
    - URL de base (ex: `https://application-couple.vercel.app`)
    - token (`POESIE_WIDGET_TOKEN`)
    - email du destinataire (le téléphone qui doit voir le mot)
-   - URL d’ouverture de l’app (ex: `https://application-couple.vercel.app/poesie-widget`)
 4) Sur Android: appui long sur l’écran d’accueil → Widgets → “Nanamoureux” → ajouter.
 
 Note: pour l’APK unique, voir `android-app/README.md`.

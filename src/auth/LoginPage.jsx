@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase, supabaseConfigured, supabaseConfigError } from "../supabaseClient";
 import { useAuth } from "./AuthProvider";
 
+const NEXT_STORAGE_KEY = "nanamoureux_auth_next";
+
 export default function LoginPage() {
   const { session, user } = useAuth();
   const [email, setEmail] = useState("");
@@ -24,14 +26,15 @@ export default function LoginPage() {
   }, []);
 
   const redirectToWeb = useMemo(() => {
-    const next = encodeURIComponent(from || "/");
     const base = (import.meta.env.VITE_AUTH_REDIRECT_BASE_URL || window.location.origin).replace(/\/$/, "");
-    return `${base}/auth/callback?next=${next}`;
+    // IMPORTANT: on évite les query params ici, car Supabase peut exiger que l’URL
+    // corresponde exactement aux “Additional Redirect URLs”.
+    return `${base}/auth/callback`;
   }, [from]);
 
   const redirectToAndroid = useMemo(() => {
-    const next = encodeURIComponent(from || "/");
-    return `nanamoureux://auth/callback?next=${next}`;
+    // IMPORTANT: pas de query params pour compat Supabase allowlist.
+    return `nanamoureux://auth/callback`;
   }, [from]);
 
   const sendMagicLink = async (e, { forceAndroid = false } = {}) => {
@@ -44,6 +47,13 @@ export default function LoginPage() {
     setBusy(true);
     setStatus("");
     try {
+      // Stocke la route souhaitée localement pour la récupérer dans /auth/callback.
+      try {
+        localStorage.setItem(NEXT_STORAGE_KEY, from || "/");
+      } catch {
+        // ignore (mode privé / storage bloqué)
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: { emailRedirectTo },
@@ -129,6 +139,11 @@ export default function LoginPage() {
         >
           Envoyer (Web)
         </button>
+      </div>
+
+      <div style={{ marginTop: 10, fontSize: 12, opacity: 0.8 }}>
+        <div>Redirect APK: <code>{redirectToAndroid}</code></div>
+        <div>Redirect Web: <code>{redirectToWeb}</code></div>
       </div>
 
       {status && <div style={{ marginTop: 10, opacity: 0.9 }}>{status}</div>}
