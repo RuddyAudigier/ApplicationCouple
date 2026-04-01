@@ -134,6 +134,9 @@ Champs utilisés:
 - Deux modes:
   - **Partagé**: visible par le couple (recipient vide)
   - **À mon amour**: adressé à un email (destinataire) — pratique pour “envoyer à l’autre”
+- Option **📌 Widget** dans l’éditeur:
+  - envoie un texte “épinglé” au widget
+  - remplace automatiquement le précédent (pour ne pas brouiller les messages)
 - Mise à jour temps réel (subscription `postgres_changes`).
 - Source: table Supabase `petits_mots` (`src/Page4.jsx`).
 - Script de création + RLS: `supabase/petits_mots.sql`
@@ -186,6 +189,12 @@ public.petits_mots
   - content
   - sender_email
   - recipient_email (nullable; NULL = partagé)
+
+public.poesie_widget_messages
+  - recipient_email (PK)
+  - content
+  - sender_email
+  - updated_at
 ```
 
 ## Outils technologiques utilisés
@@ -210,6 +219,7 @@ Je suis en couple et je voulais une app simple (et jolie) pour faciliter ma vie 
 3) Créer/mettre à jour les tables Supabase:
    - `supabase/idees_dates.sql`
    - `supabase/petits_mots.sql`
+   - `supabase/poesie_widget_messages.sql`
    - `supabase/calendrier_evenements_exceptions.sql`
    - `supabase/agenda_cleanup.sql`
 4) Lancer en dev:

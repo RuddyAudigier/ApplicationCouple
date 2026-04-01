@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, Check, Feather, Heart, Plus, Send, Trash2, X } from "lucide-react";
 import { supabase, supabaseConfigured, supabaseConfigError } from "./supabaseClient";
 import { useAuth } from "./auth/AuthProvider";
@@ -19,12 +19,14 @@ function isEmailLike(value) {
 export default function Page4() {
   const { user } = useAuth();
   const myEmail = (user?.email || "").trim();
+  const location = useLocation();
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
   const [composerOpen, setComposerOpen] = useState(false);
+  const [sendTarget, setSendTarget] = useState("messages"); // 'messages' | 'widget'
   const [mode, setMode] = useState("shared"); // 'shared' | 'to_partner'
 
   const [content, setContent] = useState("");
@@ -108,8 +110,29 @@ export default function Page4() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myEmail]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search || "");
+    const compose = params.get("compose");
+    if (compose !== "1") return;
+    setComposerOpen(true);
+
+    const nextMode = params.get("mode");
+    if (nextMode === "to_partner") setMode("to_partner");
+    if (nextMode === "shared") setMode("shared");
+
+    const recipient = (params.get("recipient") || "").trim();
+    if (recipient) setRecipientEmail(recipient);
+
+    const widget = params.get("widget");
+    if (widget === "1") {
+      setSendTarget("widget");
+      setMode("to_partner");
+    }
+  }, [location.search]);
+
   const resetComposer = () => {
     setContent("");
+    setSendTarget("messages");
     setMode("shared");
     setRecipientEmail(getDefaultRecipientEmail());
     setComposerOpen(false);
@@ -128,15 +151,26 @@ export default function Page4() {
     if (mode === "to_partner" && !isEmailLike(toEmail)) return;
 
     try {
-      const { data, error } = await supabase
-        .from("petits_mots")
-        .insert([{ content: nextContent, sender_email: myEmail, recipient_email: toEmail || null }])
-        .select();
+      if (sendTarget === "widget") {
+        if (!toEmail) return;
+        const { error } = await supabase
+          .from("poesie_widget_messages")
+          .upsert(
+            { recipient_email: toEmail.toLowerCase(), content: nextContent, sender_email: myEmail.toLowerCase() },
+            { onConflict: "recipient_email" },
+          );
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from("petits_mots")
+          .insert([{ content: nextContent, sender_email: myEmail, recipient_email: toEmail || null }])
+          .select();
 
-      if (error) throw error;
-      const inserted = Array.isArray(data) ? data[0] : null;
-      if (inserted) setMessages((prev) => [inserted, ...prev]);
-      else await fetchMessages();
+        if (error) throw error;
+        const inserted = Array.isArray(data) ? data[0] : null;
+        if (inserted) setMessages((prev) => [inserted, ...prev]);
+        else await fetchMessages();
+      }
 
       resetComposer();
     } catch (e2) {
@@ -242,17 +276,34 @@ export default function Page4() {
             <div className="page4-mode-row">
               <button
                 type="button"
-                className={`page4-chip ${mode === "shared" ? "active" : ""}`}
-                onClick={() => setMode("shared")}
+                className={`page4-chip ${sendTarget === "messages" && mode === "shared" ? "active" : ""}`}
+                onClick={() => {
+                  setSendTarget("messages");
+                  setMode("shared");
+                }}
               >
                 💞 Partagé
               </button>
               <button
                 type="button"
-                className={`page4-chip ${mode === "to_partner" ? "active" : ""}`}
-                onClick={() => setMode("to_partner")}
+                className={`page4-chip ${sendTarget === "messages" && mode === "to_partner" ? "active" : ""}`}
+                onClick={() => {
+                  setSendTarget("messages");
+                  setMode("to_partner");
+                }}
               >
                 💌 À mon amour
+              </button>
+              <button
+                type="button"
+                className={`page4-chip ${sendTarget === "widget" ? "active" : ""}`}
+                onClick={() => {
+                  setSendTarget("widget");
+                  setMode("to_partner");
+                }}
+                title="Envoie un texte épinglé au widget (remplace le précédent)"
+              >
+                📌 Widget
               </button>
             </div>
 
@@ -277,9 +328,14 @@ export default function Page4() {
                 rows={4}
                 autoFocus
               />
+              {sendTarget === "widget" ? (
+                <div className="page4-hint">
+                  Le texte sera affiché dans le widget et remplacera le précédent (pour éviter de brouiller les messages).
+                </div>
+              ) : null}
               <div className="page4-form-actions">
                 <button type="submit" className="page4-primary-btn" disabled={!canSendToPartner}>
-                  <Send size={18} /> Envoyer
+                  <Send size={18} /> {sendTarget === "widget" ? "Envoyer au widget" : "Envoyer"}
                 </button>
                 <button type="button" className="page4-ghost-btn" onClick={resetComposer}>
                   Annuler

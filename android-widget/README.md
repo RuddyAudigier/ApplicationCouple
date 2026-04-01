@@ -31,4 +31,3 @@ Lancer l’app Android, puis renseigner:
 - URL d’ouverture (ex: `https://application-couple.vercel.app/poesie-widget`)
 
 Ensuite: appui long écran d’accueil → Widgets → “Nanamoureux”.
-

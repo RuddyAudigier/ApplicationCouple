@@ -1,8 +1,7 @@
-const CACHE_NAME = "nanamoureux-v1";
+// Bump this when changing caching behavior to force a clean refresh on devices.
+const CACHE_NAME = "nanamoureux-v2";
 
 const ASSETS = [
-  "/",
-  "/index.html",
   "/manifest.webmanifest",
   "/favicon.svg",
   "/pwa-192.png",
@@ -36,7 +35,7 @@ self.addEventListener("fetch", (event) => {
   const isNavigation = req.mode === "navigate";
   if (isNavigation) {
     event.respondWith(
-      fetch(req).catch(() => caches.match("/")),
+      fetch(req).catch(() => caches.match("/index.html")),
     );
     return;
   }
@@ -45,4 +44,3 @@ self.addEventListener("fetch", (event) => {
     caches.match(req).then((cached) => cached || fetch(req)),
   );
 });
-

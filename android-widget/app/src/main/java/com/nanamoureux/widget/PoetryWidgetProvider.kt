@@ -16,14 +16,7 @@ import androidx.work.WorkManager
 class PoetryWidgetProvider : AppWidgetProvider() {
   override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
     super.onUpdate(context, appWidgetManager, appWidgetIds)
-    // Placeholder state immediately
-    for (id in appWidgetIds) {
-      val views = RemoteViews(context.packageName, R.layout.widget_poetry)
-      views.setTextViewText(R.id.widgetTitle, "Nanamoureux")
-      views.setTextViewText(R.id.widgetContent, "Mise à jour…")
-      appWidgetManager.updateAppWidget(id, views)
-    }
-
+    // Ne pas écraser l'affichage actuel avec un "loading" (évite le clignotement).
     enqueueUpdate(context, appWidgetIds)
   }
 
@@ -73,6 +66,29 @@ class PoetryWidgetProvider : AppWidgetProvider() {
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
       )
     }
+
+    fun buildComposeUrl(context: Context): String {
+      val raw = Prefs.getAppUrl(context).trim()
+      if (raw.isBlank()) return ""
+      return try {
+        val uri = Uri.parse(raw)
+        val origin = uri.buildUpon().path("").clearQuery().fragment("").build().toString().removeSuffix("/")
+        "$origin/page4?compose=1&mode=to_partner"
+      } catch (_: Exception) {
+        raw
+      }
+    }
+
+    fun buildComposeWebIntent(context: Context): PendingIntent? {
+      val url = buildComposeUrl(context)
+      if (url.isBlank()) return null
+      val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+      return PendingIntent.getActivity(
+        context,
+        1,
+        intent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+      )
+    }
   }
 }
-

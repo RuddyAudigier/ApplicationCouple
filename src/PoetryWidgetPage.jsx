@@ -85,6 +85,11 @@ export default function PoetryWidgetPage() {
 
       <main className="poetry-widget-main">
         <div className="poetry-widget-hint">{hint}</div>
+        <div className="poetry-widget-actions">
+          <Link className="poetry-widget-action" to="/page4?compose=1&mode=to_partner">
+            ✍️ Écrire
+          </Link>
+        </div>
 
         {!supabaseConfigured ? null : errorMsg ? (
           <div className="poetry-widget-card">
@@ -116,4 +121,3 @@ export default function PoetryWidgetPage() {
     </div>
   );
 }
-

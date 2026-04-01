@@ -31,4 +31,3 @@ object Prefs {
       .apply()
   }
 }
-

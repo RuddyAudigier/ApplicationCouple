@@ -35,6 +35,7 @@ class WidgetUpdateWorker(
         views.setTextViewText(R.id.widgetTitle, "Nanamoureux")
         views.setTextViewText(R.id.widgetContent, "Ouvre l’app Nanamoureux pour configurer le widget.")
         PoetryWidgetProvider.buildOpenAppIntent(applicationContext)?.let { views.setOnClickPendingIntent(R.id.widgetRoot, it) }
+        PoetryWidgetProvider.buildComposeWebIntent(applicationContext)?.let { views.setOnClickPendingIntent(R.id.widgetCompose, it) }
         mgr.updateAppWidget(id, views)
       }
       return Result.success()
@@ -49,6 +50,7 @@ class WidgetUpdateWorker(
       views.setTextViewText(R.id.widgetContent, content.ifBlank { "Aucun mot pour le moment." })
       views.setTextViewText(R.id.widgetMeta, meta)
       PoetryWidgetProvider.buildOpenAppIntent(applicationContext)?.let { views.setOnClickPendingIntent(R.id.widgetRoot, it) }
+      PoetryWidgetProvider.buildComposeWebIntent(applicationContext)?.let { views.setOnClickPendingIntent(R.id.widgetCompose, it) }
       mgr.updateAppWidget(id, views)
     }
 
@@ -75,7 +77,16 @@ class WidgetUpdateWorker(
     return try {
       val code = conn.responseCode
       val body = (if (code in 200..299) conn.inputStream else conn.errorStream).bufferedReader().use { it.readText() }
-      if (code !in 200..299) return Pair("Erreur widget ($code)", "")
+      if (code !in 200..299) {
+        val msg = try {
+          val json = JSONObject(body)
+          json.optString("error", "").ifBlank { body }
+        } catch (_: Exception) {
+          body
+        }
+        val short = msg.trim().take(120)
+        return Pair("Erreur widget ($code): $short", "")
+      }
 
       val json = JSONObject(body)
       val data = json.optJSONObject("data")
@@ -97,4 +108,3 @@ class WidgetUpdateWorker(
     const val KEY_WIDGET_IDS = "widget_ids"
   }
 }
-

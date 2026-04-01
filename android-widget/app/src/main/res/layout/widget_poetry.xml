@@ -21,7 +21,7 @@
     android:layout_height="wrap_content"
     android:layout_below="@id/widgetTitle"
     android:layout_marginTop="8dp"
-    android:text="…"
+    android:text=""
     android:textStyle="bold"
     android:textSize="16sp"
     android:maxLines="4"
@@ -36,5 +36,17 @@
     android:textSize="10sp"
     android:alpha="0.75" />
 
-</RelativeLayout>
+  <Button
+    android:id="@+id/widgetCompose"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentTop="true"
+    android:text="✍️"
+    android:minHeight="36dp"
+    android:minWidth="36dp"
+    android:padding="0dp"
+    android:backgroundTint="#33FFFFFF"
+    android:textSize="14sp" />
 
+</RelativeLayout>

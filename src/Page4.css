@@ -207,6 +207,10 @@
   border-color: rgba(255, 181, 167, 0.55);
   background: rgba(255, 181, 167, 0.20);
 }
+.page4-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 
 .page4-row {
   display: flex;
@@ -373,4 +377,3 @@
   color: var(--text-light);
   line-height: 1.35;
 }
-

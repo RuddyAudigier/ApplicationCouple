@@ -63,6 +63,30 @@
   gap: 12px;
 }
 
+.poetry-widget-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.poetry-widget-action {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: var(--shadow-soft);
+  color: var(--text-main);
+  font-weight: 900;
+}
+
+.poetry-widget-action:active {
+  transform: scale(0.98);
+}
+
 .poetry-widget-hint {
   font-size: 12px;
   color: var(--text-light);
@@ -120,4 +144,3 @@
 .poetry-widget-error {
   color: #b00020;
 }
-

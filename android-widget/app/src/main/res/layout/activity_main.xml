@@ -81,6 +81,12 @@
         android:text="Ouvrir l’app" />
     </LinearLayout>
 
+    <Button
+      android:id="@+id/composeBtn"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="10dp"
+      android:text="Écrire (via le lien)" />
+
   </LinearLayout>
 </ScrollView>
-

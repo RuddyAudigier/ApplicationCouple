@@ -42,6 +42,14 @@ class MainActivity : AppCompatActivity() {
       }
       startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url)))
     }
+
+    findViewById<Button>(R.id.composeBtn).setOnClickListener {
+      val url = PoetryWidgetProvider.buildComposeUrl(this)
+      if (url.isBlank()) {
+        Toast.makeText(this, "Renseigne l’URL de l’app (ex: https://...)", Toast.LENGTH_SHORT).show()
+        return@setOnClickListener
+      }
+      startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url)))
+    }
   }
 }
-
