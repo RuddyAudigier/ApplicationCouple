@@ -236,7 +236,10 @@ Astuce “widget” (sans app native):
 
 ### Widget Android (natif)
 
-Un vrai widget Android nécessite une app Android. Un projet minimal est fourni dans `android-widget/`.
+Un vrai widget Android nécessite une app Android.
+
+- APK unique (recommandé): `android-app/` (WebView + widget dans une seule app)
+- Ancien prototype widget-only: `android-widget/` (à éviter si tu veux “une seule app”)
 
 1) Déployer l’app (ex: Vercel) et configurer les variables serveur:
    - `SUPABASE_URL`
@@ -251,7 +254,7 @@ Un vrai widget Android nécessite une app Android. Un projet minimal est fourni 
    - URL d’ouverture de l’app (ex: `https://application-couple.vercel.app/poesie-widget`)
 4) Sur Android: appui long sur l’écran d’accueil → Widgets → “Nanamoureux” → ajouter.
 
-Note: `android-widget/` est un template à importer dans Android Studio (voir `android-widget/README.md`).
+Note: pour l’APK unique, voir `android-app/README.md`.
 
 Variables côté serveur (pour `api/calendar.ics.js`) — à mettre sur Vercel/serveur, pas dans le client:
 - `SUPABASE_URL`

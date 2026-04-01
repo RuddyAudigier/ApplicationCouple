@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <WebView
+    android:id="@+id/webView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+
+  <ImageButton
+    android:id="@+id/settingsBtn"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentTop="true"
+    android:layout_margin="12dp"
+    android:background="@android:color/transparent"
+    android:contentDescription="Réglages"
+    android:src="@android:drawable/ic_menu_manage" />
+
+</RelativeLayout>
+
