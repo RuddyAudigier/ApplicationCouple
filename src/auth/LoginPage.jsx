@@ -13,23 +13,40 @@ export default function LoginPage() {
 
   const from = location.state?.from || "/";
 
-  const redirectTo = useMemo(() => {
-    const base = (import.meta.env.VITE_AUTH_REDIRECT_BASE_URL || window.location.origin).replace(/\/$/, "");
+  const isAndroidShell = useMemo(() => {
+    try {
+      if (typeof window !== "undefined" && window.NanamoureuxBridge) return true;
+      const ua = (typeof navigator !== "undefined" ? navigator.userAgent : "") || "";
+      return ua.includes("NanamoureuxAndroid");
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const redirectToWeb = useMemo(() => {
     const next = encodeURIComponent(from || "/");
+    const base = (import.meta.env.VITE_AUTH_REDIRECT_BASE_URL || window.location.origin).replace(/\/$/, "");
     return `${base}/auth/callback?next=${next}`;
   }, [from]);
 
-  const sendMagicLink = async (e) => {
-    e.preventDefault();
+  const redirectToAndroid = useMemo(() => {
+    const next = encodeURIComponent(from || "/");
+    return `nanamoureux://auth/callback?next=${next}`;
+  }, [from]);
+
+  const sendMagicLink = async (e, { forceAndroid = false } = {}) => {
+    e?.preventDefault?.();
     if (!supabaseConfigured || !supabase) return;
     if (!email.trim()) return;
+
+    const emailRedirectTo = forceAndroid || isAndroidShell ? redirectToAndroid : redirectToWeb;
 
     setBusy(true);
     setStatus("");
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
-        options: { emailRedirectTo: redirectTo },
+        options: { emailRedirectTo },
       });
       if (error) throw error;
       setStatus("Lien envoyé. Ouvre ton email et clique sur le lien de connexion.");
@@ -92,6 +109,27 @@ export default function LoginPage() {
           {busy ? "Envoi…" : "Envoyer"}
         </button>
       </form>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={(e) => sendMagicLink(e, { forceAndroid: true })}
+          style={{ padding: "10px 12px", borderRadius: 12 }}
+          title="Force le lien nanamoureux:// pour ouvrir l’APK"
+        >
+          Envoyer (APK Android)
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={(e) => sendMagicLink(e, { forceAndroid: false })}
+          style={{ padding: "10px 12px", borderRadius: 12, opacity: 0.8 }}
+          title="Lien web classique"
+        >
+          Envoyer (Web)
+        </button>
+      </div>
 
       {status && <div style={{ marginTop: 10, opacity: 0.9 }}>{status}</div>}
 

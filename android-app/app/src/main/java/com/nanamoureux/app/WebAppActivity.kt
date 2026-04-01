@@ -26,6 +26,7 @@ class WebAppActivity : AppCompatActivity() {
     webView.settings.javaScriptEnabled = true
     webView.settings.domStorageEnabled = true
     webView.settings.mediaPlaybackRequiresUserGesture = true
+    webView.settings.userAgentString = "${webView.settings.userAgentString} NanamoureuxAndroid"
     webView.webChromeClient = WebChromeClient()
     webView.addJavascriptInterface(NanamoureuxBridge(this), "NanamoureuxBridge")
 
@@ -54,8 +55,18 @@ class WebAppActivity : AppCompatActivity() {
   private fun resolveInitialUrl(base: String): String {
     val extra = intent?.getStringExtra(EXTRA_URL)?.trim().orEmpty()
     if (extra.isNotBlank()) return extra
-    val data = intent?.data?.toString()?.trim().orEmpty()
-    if (data.isNotBlank()) return data
+    val data = intent?.data
+    if (data != null) {
+      val dataStr = data.toString().trim()
+      if (data.scheme == "nanamoureux") {
+        val query = data.encodedQuery?.let { if (it.isNotBlank()) "?$it" else "" } ?: ""
+        val path = data.path?.trim().orEmpty()
+        // On convertit le deep link custom scheme vers l’URL web /auth/callback
+        if (path.endsWith("/callback") || path == "/callback") return "$base/auth/callback$query"
+        return "$base/auth/callback$query"
+      }
+      if (dataStr.isNotBlank()) return dataStr
+    }
     return base
   }
 

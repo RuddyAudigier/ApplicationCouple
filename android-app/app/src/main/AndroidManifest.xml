@@ -27,6 +27,17 @@
           android:host="application-couple.vercel.app"
           android:pathPrefix="/auth/callback" />
       </intent-filter>
+
+      <!-- Custom scheme: fiable pour ouvrir l’APK depuis le magic link -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+          android:scheme="nanamoureux"
+          android:host="auth"
+          android:pathPrefix="/callback" />
+      </intent-filter>
     </activity>
 
     <!-- Réglages: URL + token + emails -->

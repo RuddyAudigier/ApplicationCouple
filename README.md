@@ -16,7 +16,7 @@ Application web pour faciliter l’organisation quotidienne d’un couple (cours
 
 Variables utiles:
 - `VITE_AUTH_REDIRECT_BASE_URL` (optionnel): base URL utilisée pour construire le callback (sinon `window.location.origin`).
-  - Pour Android (APK unique), le lien doit arriver sur `https://application-couple.vercel.app/auth/callback` afin que l’app puisse l’ouvrir dans la WebView.
+  - Pour Android (APK unique), on utilise un redirect **custom scheme** `nanamoureux://auth/callback` pour forcer l’ouverture de l’APK.
 
 ### 2) Accueil / Dashboard
 

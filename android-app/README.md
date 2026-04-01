@@ -36,10 +36,12 @@ Ce dossier contient une **seule app Android** qui inclut :
 
 Le magic link doit ouvrir l’app Android (pas uniquement le site web).
 
-- L’APK déclare un deep link vers:
-  - `https://application-couple.vercel.app/auth/callback`
+- L’APK déclare 2 deep links:
+  - `nanamoureux://auth/callback` (le plus fiable)
+  - `https://application-couple.vercel.app/auth/callback` (peut dépendre des réglages Android)
 - Dans Supabase → Authentication → URL Configuration:
   - ajoute `https://application-couple.vercel.app/auth/callback` dans “Additional Redirect URLs”
+  - ajoute `nanamoureux://auth/callback` dans “Additional Redirect URLs”
 
 Astuce:
 - après le clic dans l’email, Android peut te proposer “Ouvrir avec Nanamoureux”. Choisis Nanamoureux.
