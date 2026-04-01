@@ -5,6 +5,7 @@ import { supabase, supabaseConfigured, supabaseConfigError } from "../supabaseCl
 export default function AuthCallback() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("Connexion en cours…");
+  const [showOpenApp, setShowOpenApp] = useState(false);
 
   useEffect(() => {
     async function run() {
@@ -17,6 +18,21 @@ export default function AuthCallback() {
         // Magic link uses ?code=... (PKCE). Exchange it for a session.
         const url = new URL(window.location.href);
         const next = url.searchParams.get("next") || "/";
+
+        // Android handoff: si le callback s'ouvre dans Chrome (ou WebAPK/PWA),
+        // on tente d'ouvrir l'APK via le custom scheme pour finaliser la session dans la WebView.
+        const ua = navigator.userAgent || "";
+        const isAndroid = ua.includes("Android");
+        const isAndroidShell = ua.includes("NanamoureuxAndroid") || Boolean(window.NanamoureuxBridge);
+        if (isAndroid && !isAndroidShell) {
+          const schemeUrl = `nanamoureux://auth/callback${window.location.search || ""}`;
+          setStatus("Ouverture de l’application…");
+          setShowOpenApp(true);
+          // Tentative silencieuse. Si l’APK n’est pas installé, l’utilisateur restera sur le web.
+          window.location.href = schemeUrl;
+          // Ne pas continuer l’exchange ici: on le fera dans l’APK (WebView).
+          return;
+        }
 
         if (url.searchParams.get("code")) {
           const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
@@ -42,5 +58,16 @@ export default function AuthCallback() {
     run();
   }, [navigate]);
 
-  return <div style={{ padding: 16 }}>{status}</div>;
+  return (
+    <div style={{ padding: 16 }}>
+      <div>{status}</div>
+      {showOpenApp ? (
+        <div style={{ marginTop: 12 }}>
+          <a href={`nanamoureux://auth/callback${window.location.search || ""}`}>
+            Ouvrir Nanamoureux
+          </a>
+        </div>
+      ) : null}
+    </div>
+  );
 }
