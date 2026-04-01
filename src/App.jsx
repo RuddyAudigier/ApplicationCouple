@@ -6,6 +6,7 @@ import Page3 from "./Page3";
 import Page4 from "./Page4";
 import Page5 from "./Page5";
 import Page6 from "./Page6";
+import PoetryWidgetPage from "./PoetryWidgetPage";
 import { AuthProvider } from "./auth/AuthProvider";
 import RequireAuth from "./auth/RequireAuth";
 import LoginPage from "./auth/LoginPage";
@@ -55,6 +56,14 @@ function App() {
             element={
               <RequireAuth>
                 <Page4 />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/poesie-widget"
+            element={
+              <RequireAuth>
+                <PoetryWidgetPage />
               </RequireAuth>
             }
           />

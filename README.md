@@ -128,7 +128,24 @@ Champs utilisés:
 - `notes` (text, nullable)
 - `created_at` (timestamptz)
 
-### 7) Budget (répartition)
+### 7) Poésie (petits mots)
+
+- Un espace pour écrire des petits mots / phrases à partager.
+- Deux modes:
+  - **Partagé**: visible par le couple (recipient vide)
+  - **À mon amour**: adressé à un email (destinataire) — pratique pour “envoyer à l’autre”
+- Mise à jour temps réel (subscription `postgres_changes`).
+- Source: table Supabase `petits_mots` (`src/Page4.jsx`).
+- Script de création + RLS: `supabase/petits_mots.sql`
+- “Mode widget” (plein écran) à épingler sur l’écran d’accueil: route ` /poesie-widget `.
+
+Champs utilisés:
+- `content` (text)
+- `sender_email` (text)
+- `recipient_email` (text, nullable)
+- `created_at` (timestamptz)
+
+### 8) Budget (répartition)
 
 - Calcul local (sans BDD) pour répartir des dépenses selon les revenus.
 - Page: `src/Page6.jsx`
@@ -163,6 +180,12 @@ public.idees_dates
   - id, created_at
   - title, mood
   - place (nullable), notes (nullable)
+
+public.petits_mots
+  - id, created_at
+  - content
+  - sender_email
+  - recipient_email (nullable; NULL = partagé)
 ```
 
 ## Outils technologiques utilisés
@@ -186,10 +209,39 @@ Je suis en couple et je voulais une app simple (et jolie) pour faciliter ma vie 
    - renseigner `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`
 3) Créer/mettre à jour les tables Supabase:
    - `supabase/idees_dates.sql`
+   - `supabase/petits_mots.sql`
    - `supabase/calendrier_evenements_exceptions.sql`
    - `supabase/agenda_cleanup.sql`
 4) Lancer en dev:
    - `npm run dev`
+
+### Installation sur téléphone (PWA)
+
+L’app est installable comme une PWA:
+- iPhone (Safari): Partager → “Sur l’écran d’accueil”
+- Android (Chrome): menu → “Installer l’application”
+
+Astuce “widget” (sans app native):
+- ouvre ` /poesie-widget ` puis “Ajouter à l’écran d’accueil” pour avoir un raccourci plein écran qui affiche le dernier petit mot.
+
+### Widget Android (natif)
+
+Un vrai widget Android nécessite une app Android. Un projet minimal est fourni dans `android-widget/`.
+
+1) Déployer l’app (ex: Vercel) et configurer les variables serveur:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `POESIE_WIDGET_TOKEN` (secret de ton choix)
+2) Le widget lit l’API:
+   - `GET /api/poesie-widget?token=...&recipient=...`
+3) Ouvrir `android-widget/` dans Android Studio, lancer l’app, puis renseigner:
+   - URL de base (ex: `https://application-couple.vercel.app`)
+   - token (`POESIE_WIDGET_TOKEN`)
+   - email du destinataire (le téléphone qui doit voir le mot)
+   - URL d’ouverture de l’app (ex: `https://application-couple.vercel.app/poesie-widget`)
+4) Sur Android: appui long sur l’écran d’accueil → Widgets → “Nanamoureux” → ajouter.
+
+Note: `android-widget/` est un template à importer dans Android Studio (voir `android-widget/README.md`).
 
 Variables côté serveur (pour `api/calendar.ics.js`) — à mettre sur Vercel/serveur, pas dans le client:
 - `SUPABASE_URL`

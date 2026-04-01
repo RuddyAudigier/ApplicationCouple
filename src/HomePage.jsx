@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './HomePage.css';
-import { Heart, ShoppingBag, Calendar, ImageIcon, Lightbulb, PieChart, Home, MessageCircle, Settings, Plus, ChevronRight } from 'lucide-react';
+import { Heart, ShoppingBag, Calendar, Feather, Lightbulb, PieChart, Home, MessageCircle, Settings, Plus, ChevronRight } from 'lucide-react';
 import { supabase, supabaseConfigured } from './supabaseClient';
 
 export default function HomePage() {
@@ -114,14 +114,14 @@ export default function HomePage() {
           </div>
         </Link>
 
-        {/* PAGE 4 : Galerie / Souvenirs */}
+        {/* PAGE 4 : Poésie / Petits mots */}
         <Link to="/page4" className="feature-card widget-small">
-          <div className="icon-wrapper icon-gallery">
-            <ImageIcon size={28} />
+          <div className="icon-wrapper icon-poetry">
+            <Feather size={28} />
           </div>
           <div>
-            <div className="widget-title">Souvenirs</div>
-            <div className="widget-subtitle">45 photos</div>
+            <div className="widget-title">Poésie</div>
+            <div className="widget-subtitle">Petits mots</div>
           </div>
         </Link>
 

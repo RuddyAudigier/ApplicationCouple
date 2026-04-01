@@ -13,12 +13,17 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  min-height: 56px;
 }
 
 .greeting-text {
   font-size: 24px;
   font-weight: 600;
   color: var(--text-main);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .avatars {
@@ -79,9 +84,11 @@
 
 /* 1. Petit Mot */
 .widget-mot {
-  min-height: 140px;
-  justify-content: center;
+  min-height: 176px;
+  justify-content: flex-start;
   background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(249,231,159,0.3) 100%);
+  padding-right: 78px; /* évite que le texte passe sous la flèche */
+  padding-bottom: 72px; /* évite que le texte passe sous la flèche */
 }
 @media (prefers-color-scheme: dark) {
   .widget-mot {
@@ -100,6 +107,7 @@
   font-size: 18px;
   font-weight: 500;
   line-height: 1.4;
+  word-break: break-word;
 }
 .fab-icon {
   position: absolute;
@@ -122,6 +130,7 @@
   text-align: center;
   gap: 12px;
   padding: 24px 16px;
+  min-height: 150px;
 }
 .icon-wrapper {
   width: 56px;
@@ -135,7 +144,7 @@
 }
 .icon-shopping { background: var(--color-secondary-1); }
 .icon-calendar { background: var(--color-secondary-2); }
-.icon-gallery { background: var(--text-light); }
+.icon-poetry { background: var(--color-secondary-2); }
 .icon-ideas { background: var(--color-secondary-3); color: #B7950B; } /* Darker icon for contrast */
 
 .widget-title {

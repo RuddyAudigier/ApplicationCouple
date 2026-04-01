@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="Nanamoureux • Widget Poésie"
+      android:textStyle="bold"
+      android:textSize="20sp"
+      android:paddingBottom="8dp" />
+
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="Renseigne l’URL de ton app (Vercel), le token, et l’email du destinataire. Ensuite ajoute le widget sur l’écran d’accueil."
+      android:alpha="0.8"
+      android:paddingBottom="16dp" />
+
+    <EditText
+      android:id="@+id/appUrl"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:hint="URL de l’app (ex: https://application-couple.vercel.app/poesie-widget)"
+      android:inputType="textUri"
+      android:padding="12dp" />
+
+    <EditText
+      android:id="@+id/apiUrl"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="10dp"
+      android:hint="URL de base (ex: https://application-couple.vercel.app)"
+      android:inputType="textUri"
+      android:padding="12dp" />
+
+    <EditText
+      android:id="@+id/token"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="10dp"
+      android:hint="POESIE_WIDGET_TOKEN"
+      android:inputType="textPassword"
+      android:padding="12dp" />
+
+    <EditText
+      android:id="@+id/recipient"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="10dp"
+      android:hint="Email du destinataire (ex: partenaire@gmail.com)"
+      android:inputType="textEmailAddress"
+      android:padding="12dp" />
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:layout_marginTop="16dp">
+
+      <Button
+        android:id="@+id/saveBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Enregistrer" />
+
+      <Button
+        android:id="@+id/openAppBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_weight="1"
+        android:text="Ouvrir l’app" />
+    </LinearLayout>
+
+  </LinearLayout>
+</ScrollView>
+
