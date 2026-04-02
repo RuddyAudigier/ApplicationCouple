@@ -23,14 +23,22 @@ class SettingsActivity : AppCompatActivity() {
     recipient.setText(Prefs.getRecipient(this))
 
     findViewById<Button>(R.id.saveBtn).setOnClickListener {
+      val rawApiUrl = apiUrl.text?.toString().orEmpty()
+      val rawAppUrl = appUrl.text?.toString().orEmpty()
+      val normalizedApi = WidgetUrls.normalizeBaseUrl(rawApiUrl)
+      val normalizedApp = WidgetUrls.normalizeBaseUrl(rawAppUrl)
+
       Prefs.setAll(
         this,
-        apiUrl.text?.toString().orEmpty(),
+        normalizedApi,
         token.text?.toString().orEmpty(),
         recipient.text?.toString().orEmpty(),
-        appUrl.text?.toString().orEmpty(),
+        normalizedApp,
       )
-      Toast.makeText(this, "Enregistré", Toast.LENGTH_SHORT).show()
+      val msg =
+        if (normalizedApi != rawApiUrl.trim() || normalizedApp != rawAppUrl.trim()) "Enregistré (URL corrigée)"
+        else "Enregistré"
+      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
       PoetryWidgetProvider.requestUpdateNow(this)
       finish()
     }

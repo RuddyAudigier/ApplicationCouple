@@ -34,7 +34,7 @@ object Prefs {
 
   fun setAll(ctx: Context, apiUrl: String, token: String, recipient: String, appUrl: String) {
     ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE).edit()
-      .putString(KEY_API_URL, apiUrl.trim())
+      .putString(KEY_API_URL, apiUrl.trim()) 
       .putString(KEY_TOKEN, token.trim())
       .putString(KEY_RECIPIENT, recipient.trim().lowercase())
       .putString(KEY_APP_URL, appUrl.trim())

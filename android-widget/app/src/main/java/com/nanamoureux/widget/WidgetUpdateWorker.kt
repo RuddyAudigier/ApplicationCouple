@@ -3,6 +3,7 @@ package com.nanamoureux.widget
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
+import android.util.Log
 import android.widget.RemoteViews
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -25,7 +26,7 @@ class WidgetUpdateWorker(
     val mgr = AppWidgetManager.getInstance(applicationContext)
     if (appWidgetIds.isEmpty()) return Result.success()
 
-    val apiUrl = Prefs.getApiUrl(applicationContext)
+    val apiUrl = WidgetUrls.normalizeBaseUrl(Prefs.getApiUrl(applicationContext))
     val token = Prefs.getToken(applicationContext)
     val recipient = Prefs.getRecipient(applicationContext)
 
@@ -58,8 +59,8 @@ class WidgetUpdateWorker(
   }
 
   private fun buildUrl(apiUrl: String, token: String, recipient: String): String {
-    val base = apiUrl.trim().removeSuffix("/")
-    val url = "$base/api/poesie-widget?token=${encode(token)}&recipient=${encode(recipient)}"
+    val base = WidgetUrls.normalizeBaseUrl(apiUrl)
+    val url = "$base/api/poesie-widget?token=${encode(token)}&recipient=${encode(recipient)}&includeShared=1"
     return url
   }
 
@@ -84,8 +85,15 @@ class WidgetUpdateWorker(
         } catch (_: Exception) {
           body
         }
+        val prefix = when (code) {
+          401 -> "Token invalide"
+          404 -> "URL API invalide"
+          500 -> "Erreur configuration serveur"
+          else -> "Erreur widget ($code)"
+        }
         val short = msg.trim().take(120)
-        return Pair("Erreur widget ($code): $short", "")
+        Log.w("WidgetUpdateWorker", "Widget fetch failed ($code) url=$urlStr body=${body.take(200)}")
+        return Pair("$prefix: $short", "")
       }
 
       val json = JSONObject(body)
@@ -98,6 +106,7 @@ class WidgetUpdateWorker(
       val meta = listOf(sender, createdAt).filter { it.isNotBlank() }.joinToString(" • ")
       Pair(content, meta)
     } catch (_: Exception) {
+      Log.w("WidgetUpdateWorker", "Widget fetch exception url=$urlStr", _)
       Pair("Impossible de récupérer le message.", "")
     } finally {
       conn.disconnect()

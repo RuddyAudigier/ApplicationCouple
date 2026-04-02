@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.RemoteViews
 import androidx.work.CoroutineWorker
 import androidx.work.Data
@@ -34,7 +35,7 @@ class WidgetUpdateWorker(
     val mgr = AppWidgetManager.getInstance(applicationContext)
     if (appWidgetIds.isEmpty()) return Result.success()
 
-    val apiUrl = Prefs.getApiUrl(applicationContext).ifBlank { BuildConfig.DEFAULT_APP_URL }
+    val apiUrl = WidgetUrls.normalizeBaseUrl(Prefs.getApiUrl(applicationContext).ifBlank { BuildConfig.DEFAULT_APP_URL })
     val token = Prefs.getToken(applicationContext)
     val recipient = Prefs.getRecipient(applicationContext)
 
@@ -46,21 +47,22 @@ class WidgetUpdateWorker(
       return Result.success()
     }
 
-    if (token.isBlank() || recipient.isBlank()) {
+    if (apiUrl.isBlank() || token.isBlank() || recipient.isBlank()) {
       for (id in appWidgetIds) {
         val views = RemoteViews(applicationContext.packageName, R.layout.widget_poetry)
         views.setTextViewText(R.id.widgetTitle, "Nanamoureux")
-        views.setTextViewText(R.id.widgetContent, "Ouvre l’app pour configurer le widget.")
+        views.setTextViewText(R.id.widgetContent, "Ouvre l’app → ⚙️ puis renseigne URL, token et email.")
         views.setOnClickPendingIntent(R.id.widgetRoot, buildOpenAppIntent())
         mgr.updateAppWidget(id, views)
       }
       return Result.success()
     }
 
-    Prefs.setLastWidgetFetchMs(applicationContext, now)
-
     val url = buildWidgetUrl(apiUrl, token, recipient)
     val (content, meta) = fetchLatest(url)
+    if (!content.startsWith("Erreur") && content != "Pas de connexion.") {
+      Prefs.setLastWidgetFetchMs(applicationContext, now)
+    }
 
     val displayContent = content.ifBlank { "Aucun mot pour le moment." }
     val prevContent = Prefs.getLastWidgetContent(applicationContext)
@@ -86,7 +88,7 @@ class WidgetUpdateWorker(
   }
 
   private fun buildWidgetUrl(apiUrl: String, token: String, recipient: String): String {
-    val base = apiUrl.trim().removeSuffix("/")
+    val base = WidgetUrls.normalizeBaseUrl(apiUrl)
     return "$base/api/poesie-widget?token=${encode(token)}&recipient=${encode(recipient)}"
   }
 
@@ -117,23 +119,40 @@ class WidgetUpdateWorker(
     return try {
       val code = conn.responseCode
       val body = (if (code in 200..299) conn.inputStream else conn.errorStream).bufferedReader().use { it.readText() }
-      if (code !in 200..299) return Pair("Erreur ($code)", "")
+      if (code !in 200..299) {
+        val serverMsg = try {
+          val json = JSONObject(body)
+          json.optString("error", "").ifBlank { "" }
+        } catch (_: Exception) {
+          ""
+        }
+        val msg = when (code) {
+          401 -> "Erreur (401): token invalide"
+          400 -> "Erreur (400): email manquant"
+          404 -> "Erreur (404): URL API invalide"
+          else -> "Erreur ($code)"
+        }
+        val suffix = serverMsg.takeIf { it.isNotBlank() }?.let { ": ${it.take(80)}" } ?: ""
+        Log.w("WidgetUpdateWorker", "Widget fetch failed ($code) url=$urlStr body=${body.take(200)}")
+        return Pair("$msg$suffix", "")
+      }
 
       val json = JSONObject(body)
-      val data = json.optJSONObject("data") ?: return Pair("", "")
+      val data = json.optJSONObject("data") ?: return Pair("", "Ouvre Poésie → 📌 Widget")
       val content = data.optString("content", "")
       val sender = data.optString("sender_email", "")
       val createdAt = data.optString("created_at", "")
       val meta = listOf(sender, createdAt).filter { it.isNotBlank() }.joinToString(" • ")
       Pair(content, meta)
     } catch (_: Exception) {
+      Log.w("WidgetUpdateWorker", "Widget fetch exception url=$urlStr", _)
       Pair("Pas de connexion.", "")
     } finally {
       conn.disconnect()
     }
   }
 
-  companion object {
+  companion object {            
     const val KEY_WIDGET_IDS = "widget_ids"
     const val KEY_LOOP = "loop"
     const val KEY_FORCE = "force"

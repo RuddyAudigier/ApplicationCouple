@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     const includeShared = String(req?.query?.includeShared || "0") === "1";
 
     const supabaseUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "").trim();
-    const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
+    const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || "").trim();
 
     if (!supabaseUrl || !supabaseKey) {
       res.statusCode = 500;
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       res.end(
         JSON.stringify({
           error:
-            "Supabase is not configured on the server. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY on the server (Vercel env vars).",
+            "Supabase not configured. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (Vercel env vars).",
         }),
       );
       return;
