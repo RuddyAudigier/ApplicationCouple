@@ -74,7 +74,7 @@ export default function PoetryWidgetPage() {
     <div className="poetry-widget">
       <div className="poetry-widget-bg" />
       <header className="poetry-widget-header">
-        <Link to="/page4" className="poetry-widget-back" aria-label="Retour">
+        <Link to="/poesie" className="poetry-widget-back" aria-label="Retour">
           <ArrowLeft size={22} />
         </Link>
         <div className="poetry-widget-title">Dernier petit mot</div>
@@ -86,7 +86,7 @@ export default function PoetryWidgetPage() {
       <main className="poetry-widget-main">
         <div className="poetry-widget-hint">{hint}</div>
         <div className="poetry-widget-actions">
-          <Link className="poetry-widget-action" to="/page4?compose=1&mode=to_partner">
+          <Link className="poetry-widget-action" to="/poesie?compose=1&mode=to_partner">
             ✍️ Écrire
           </Link>
         </div>

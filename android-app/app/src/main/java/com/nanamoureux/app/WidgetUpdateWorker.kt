@@ -145,7 +145,6 @@ class WidgetUpdateWorker(
       val meta = listOf(sender, createdAt).filter { it.isNotBlank() }.joinToString(" • ")
       Pair(content, meta)
     } catch (_: Exception) {
-      Log.w("WidgetUpdateWorker", "Widget fetch exception url=$urlStr", _)
       Pair("Pas de connexion.", "")
     } finally {
       conn.disconnect()
